@@ -82,22 +82,7 @@ public class MainActivity extends AppCompatActivity {
                             previousYear = currentYear;
                         }
                         double cycle = (double) cycleSum / (num - 1);
-
-                        if (cycle < cycleJB) {
-                            int diff = numJB - num + 1;
-                            if (diff > 0) {
-                                double yearNeeded = diff / (1 / cycle - 1 / cycleJB);
-                                int when = Math.ceil(yearNeeded) == yearNeeded
-                                           ? (int)(yearNeeded) + currentYear
-                                           : (int)(yearNeeded) + currentYear + 1;
-                                res.add(hero + ": Yes and its number of movies will surpass that of James Bond in " + String.valueOf(when));
-                            } else {
-                                res.add(hero + ": Yes and its number of movies has already surpassed that of James Bond");
-                            }
-                        } else {
-                            res.add(hero + ": No. Its velocity didn't surpass the velocity of James Bond");
-                        }
-                        adapter.notifyDataSetChanged();
+                        updateListView(cycle, num, cycleJB, numJB, hero, currentYear);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -112,6 +97,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void updateListView(double cycle, int num, double cycleJB, int numJB, String hero, int currentYear) {
+        if (cycle < cycleJB) {
+            int diff = numJB - num + 1;
+            if (diff > 0) {
+                double yearNeeded = diff / (1 / cycle - 1 / cycleJB);
+                int when = Math.ceil(yearNeeded) == yearNeeded
+                        ? (int)(yearNeeded) + currentYear
+                        : (int)(yearNeeded) + currentYear + 1;
+                res.add(hero + ": Yes and its number of movies will surpass that of James Bond in " + String.valueOf(when));
+            } else {
+                res.add(hero + ": Yes and its number of movies has already surpassed that of James Bond");
+            }
+        } else {
+            res.add(hero + ": No. Its velocity didn't surpass the velocity of James Bond");
+        }
+        adapter.notifyDataSetChanged();
+    }
+
     private List<Integer> getYearList(JSONArray results) {
         List<Integer> ret = new ArrayList<>();
         try {
@@ -123,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         return ret;
     }
 
