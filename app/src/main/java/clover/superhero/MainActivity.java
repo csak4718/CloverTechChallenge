@@ -29,12 +29,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-        adapter = new ArrayAdapter<>(this, R.layout.activity_main_list_view, res);
-        ListView listView = (ListView) findViewById(R.id.list_view);
-        listView.setAdapter(adapter);
-
+        setupAdapter();
 
         new AsyncHttpClient().get(requestUrl + "James Bond", new AsyncHttpResponseHandler() {
             @Override
@@ -94,10 +89,11 @@ public class MainActivity extends AppCompatActivity {
                         if (cycle < cycleJB) {
                             int diff = numJB - num + 1;
                             if (diff > 0) {
-                                int time = Math.ceil(diff * cycle) == diff * cycle
-                                           ? (int)(diff * cycle) + currentYear
-                                           : (int)(diff * cycle) + currentYear + 1;
-                                res.add(hero + ": Yes and its number of movies will surpass that of James Bond in " + String.valueOf(time));
+                                double yearNeeded = diff / (1 / cycle - 1 / cycleJB);
+                                int when = Math.ceil(yearNeeded) == yearNeeded
+                                           ? (int)(yearNeeded) + currentYear
+                                           : (int)(yearNeeded) + currentYear + 1;
+                                res.add(hero + ": Yes and its number of movies will surpass that of James Bond in " + String.valueOf(when));
                             } else {
                                 res.add(hero + ": Yes and its number of movies has already surpassed that of James Bond");
                             }
@@ -132,5 +128,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return ret;
+    }
+
+    private void setupAdapter() {
+        adapter = new ArrayAdapter<>(this, R.layout.activity_main_list_view, res);
+        ListView listView = (ListView) findViewById(R.id.list_view);
+        listView.setAdapter(adapter);
     }
 }
