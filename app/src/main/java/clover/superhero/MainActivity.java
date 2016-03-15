@@ -6,28 +6,131 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import cz.msebera.android.httpclient.Header;
+
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
+    String requestUrl = "http://www.omdbapi.com/?s=";
+    List<String> res = new ArrayList<>();
+    ArrayAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String requestUrl = "http://www.omdbapi.com/?s=";
 
-        List<String> res = new ArrayList<>();
-        ArrayAdapter adapter = new ArrayAdapter<>(this, R.layout.activity_main_list_view, res);
+
+        adapter = new ArrayAdapter<>(this, R.layout.activity_main_list_view, res);
         ListView listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(adapter);
-        
-        String[] input = new String[] {"Batman", "Superman", "Fantastic Four"};
-        for (String str: input) {
-            str = str.replace(' ', '+');
-            Log.d("TEST", str);
+
+
+        new AsyncHttpClient().get(requestUrl + "James Bond", new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                try {
+                    JSONObject object = new JSONObject(new String(responseBody));
+                    JSONArray results = object.getJSONArray("Search");
+                    int numJB = results.length();
+                    List<Integer> yearsJB = getYearList(results);
+
+                    int previousYear = yearsJB.get(0);
+                    int currentYear = 0;
+                    int cycleSum = 0;
+                    for (int i = 1; i < numJB; i++) {
+                        currentYear = yearsJB.get(i);
+                        cycleSum += currentYear - previousYear;
+                        previousYear = currentYear;
+                    }
+                    double cycleJB = (double) cycleSum / (numJB - 1);
+
+                    compare(numJB, cycleJB);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+            }
+        });
+
+    }
+
+    private void compare(final int numJB, final double cycleJB) {
+        String[] heroArr = new String[] {"Batman", "Superman", "Fantastic Four"};
+        for (final String hero: heroArr) {
+            new AsyncHttpClient().get(requestUrl + hero, new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    try {
+                        JSONObject object = new JSONObject(new String(responseBody));
+                        JSONArray results = object.getJSONArray(("Search"));
+                        int num = results.length();
+                        List<Integer> years = getYearList(results);
+
+                        int previousYear = years.get(0);
+                        int currentYear = 0;
+                        int cycleSum = 0;
+                        for (int i = 1; i < num; i++) {
+                            currentYear = years.get(i);
+                            cycleSum += currentYear - previousYear;
+                            previousYear = currentYear;
+                        }
+                        double cycle = (double) cycleSum / (num - 1);
+
+                        if (cycle < cycleJB) {
+                            int diff = numJB - num + 1;
+                            if (diff > 0) {
+                                int time = Math.ceil(diff * cycle) == diff * cycle
+                                           ? (int)(diff * cycle) + currentYear
+                                           : (int)(diff * cycle) + currentYear + 1;
+                                res.add(hero + ": Yes and its number of movies will surpass that of James Bond in " + String.valueOf(time));
+                            } else {
+                                res.add(hero + ": Yes and its number of movies has already surpassed that of James Bond");
+                            }
+                        } else {
+                            res.add(hero + ": No. Its velocity didn't surpass the velocity of James Bond");
+                        }
+                        adapter.notifyDataSetChanged();
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                    Log.d(TAG, "Http request error");
+                }
+            });
+        }
+    }
+
+    private List<Integer> getYearList(JSONArray results) {
+        List<Integer> ret = new ArrayList<>();
+        try {
+            for (int i = 0; i < results.length(); i++) {
+                String year = results.getJSONObject(i).getString("Year");
+                ret.add(Integer.parseInt(year.substring(0, 4)));
+            }
+            Collections.sort(ret);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
-
+        return ret;
     }
 }
