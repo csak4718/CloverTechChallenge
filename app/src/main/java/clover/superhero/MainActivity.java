@@ -35,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 try {
-                    JSONObject object = new JSONObject(new String(responseBody));
-                    JSONArray results = object.getJSONArray("Search");
+                    JSONArray results = new JSONObject(new String(responseBody)).getJSONArray("Search");
                     int numJB = results.length();
                     List<Integer> yearsJB = getYearList(results);
 
@@ -49,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
                         previousYear = currentYear;
                     }
                     double cycleJB = (double) cycleSum / (numJB - 1);
-
                     compare(numJB, cycleJB);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -58,10 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
+                Log.d(TAG, "Http request error");
             }
         });
-
     }
 
     private void compare(final int numJB, final double cycleJB) {
@@ -71,8 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
-                        JSONObject object = new JSONObject(new String(responseBody));
-                        JSONArray results = object.getJSONArray(("Search"));
+                        JSONArray results = new JSONObject(new String(responseBody)).getJSONArray(("Search"));
                         int num = results.length();
                         List<Integer> years = getYearList(results);
 
