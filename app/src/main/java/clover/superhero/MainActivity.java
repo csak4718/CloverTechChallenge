@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,11 +26,13 @@ public class MainActivity extends AppCompatActivity {
     String requestUrl = "http://www.omdbapi.com/?s=";
     List<String> res = new ArrayList<>();
     ArrayAdapter adapter;
+    @Bind(R.id.list_view) ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         setupAdapter();
 
         new AsyncHttpClient().get(requestUrl + "James Bond", new AsyncHttpResponseHandler() {
@@ -48,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                         previousYear = currentYear;
                     }
                     double cycleJB = (double) cycleSum / (numJB - 1);
-                    compare(numJB, cycleJB);
+                    queryOthers(numJB, cycleJB);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -62,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void compare(final int numJB, final double cycleJB) {
+    private void queryOthers(final int numJB, final double cycleJB) {
         String[] heroArr = new String[] {"Batman", "Superman", "Fantastic Four"};
         for (final String hero: heroArr) {
             new AsyncHttpClient().get(requestUrl + hero, new AsyncHttpResponseHandler() {
@@ -131,7 +135,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupAdapter() {
         adapter = new ArrayAdapter<>(this, R.layout.activity_main_list_view, res);
-        ListView listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(adapter);
     }
 }
